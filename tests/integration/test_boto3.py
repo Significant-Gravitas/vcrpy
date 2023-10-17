@@ -2,15 +2,14 @@ import os
 
 import pytest
 
+import vcr
+
 boto3 = pytest.importorskip("boto3")
 
-import boto3  # NOQA
-import botocore  # NOQA
-
-import vcr  # NOQA
+import botocore  # noqa
 
 try:
-    from botocore import awsrequest  # NOQA
+    from botocore import awsrequest  # noqa
 
     botocore_awsrequest = True
 except ImportError:
@@ -20,12 +19,12 @@ except ImportError:
 # https://github.com/boto/botocore/pull/1495
 boto3_skip_vendored_requests = pytest.mark.skipif(
     botocore_awsrequest,
-    reason="botocore version {ver} does not use vendored requests anymore.".format(ver=botocore.__version__),
+    reason=f"botocore version {botocore.__version__} does not use vendored requests anymore.",
 )
 
 boto3_skip_awsrequest = pytest.mark.skipif(
     not botocore_awsrequest,
-    reason="botocore version {ver} still uses vendored requests.".format(ver=botocore.__version__),
+    reason=f"botocore version {botocore.__version__} still uses vendored requests.",
 )
 
 IAM_USER_NAME = "vcrpy"
@@ -55,25 +54,6 @@ def get_user(iam_client):
         return client.get_user(UserName=user_name)
 
     return _get_user
-
-
-@boto3_skip_vendored_requests
-def test_boto_vendored_stubs(tmpdir):
-    with vcr.use_cassette(str(tmpdir.join("boto3-stubs.yml"))):
-        # Perform the imports within the patched context so that
-        # HTTPConnection, VerifiedHTTPSConnection refers to the patched version.
-        from botocore.vendored.requests.packages.urllib3.connectionpool import (
-            HTTPConnection,
-            VerifiedHTTPSConnection,
-        )
-
-        from vcr.stubs.boto3_stubs import VCRRequestsHTTPConnection, VCRRequestsHTTPSConnection
-
-        # Prove that the class was patched by the stub and that we can instantiate it.
-        assert issubclass(HTTPConnection, VCRRequestsHTTPConnection)
-        assert issubclass(VerifiedHTTPSConnection, VCRRequestsHTTPSConnection)
-        HTTPConnection("hostname.does.not.matter")
-        VerifiedHTTPSConnection("hostname.does.not.matter")
 
 
 @pytest.mark.skipif(

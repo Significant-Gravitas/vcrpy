@@ -8,8 +8,4 @@ def test_vcr_import_deprecation(recwarn):
 
     import vcr  # noqa: F401
 
-    if sys.version_info[0] == 2:
-        assert len(recwarn) == 1
-        assert issubclass(recwarn[0].category, DeprecationWarning)
-    else:
-        assert len(recwarn) == 0
+    assert len(recwarn) == 0
